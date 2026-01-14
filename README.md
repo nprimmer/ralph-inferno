@@ -31,7 +31,9 @@ AI-driven autonomous development workflow.
 - A running VM/server (Hetzner, GCP, DigitalOcean, AWS, or your own)
 - SSH access to the VM
 - Git installed
-- Claude Code CLI with API key configured
+- Claude Code CLI with either:
+  - Anthropic API key (`ANTHROPIC_API_KEY`), or
+  - Claude subscription (requires `claude login` on the VM)
 
 **Optional:**
 - Cloud CLI (`hcloud`, `gcloud`, `doctl`, `aws`) for VM management
