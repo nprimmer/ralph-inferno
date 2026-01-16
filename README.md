@@ -176,7 +176,7 @@ Configuration is stored in `.ralph/config.json`:
 
 ```json
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "language": "en",
   "provider": "hcloud",
   "vm_name": "ralph-sandbox",
@@ -189,7 +189,7 @@ Configuration is stored in `.ralph/config.json`:
   },
   "notifications": {
     "ntfy_enabled": true,
-    "ntfy_topic": "ralph-notifications"
+    "ntfy_topic": "my-unique-ralph-topic"
   }
 }
 ```

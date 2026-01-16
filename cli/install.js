@@ -187,9 +187,9 @@ By continuing, you accept full responsibility for usage.
     {
       type: 'input',
       name: 'ntfyTopic',
-      message: 'ntfy.sh topic name?',
+      message: 'ntfy.sh topic name (use a unique name!)?',
       when: (a) => a.useNtfy,
-      default: 'ralph-notifications'
+      default: `ralph-${Date.now()}`
     }
   ]);
 
