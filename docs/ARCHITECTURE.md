@@ -262,7 +262,9 @@ notify "⚠️ Needs help"
   "vm_ip": "1.2.3.4",
   "user": "ubuntu",
   "region": "fsn1",
-  "github": {
+  "git_host": "github",
+  "git": {
+    "host": "github",
     "username": "your-username"
   },
   "claude": {
@@ -286,7 +288,10 @@ notify "⚠️ Needs help"
 | `load_config_nested "parent" "key" "default"` | Load nested value |
 | `get_build_cmd` | Get build command (auto-detect) |
 | `get_test_cmd` | Get test command (auto-detect) |
-| `get_github_username` | Get GitHub username |
+| `get_git_host` | Get git host type (github or gitlab) |
+| `get_git_username` | Get git username |
+| `get_git_cli` | Get CLI command (gh or glab) |
+| `get_github_username` | DEPRECATED - use `get_git_username` |
 | `get_vm_ip` | Get VM IP address |
 | `is_ntfy_enabled` | Check if notifications enabled |
 

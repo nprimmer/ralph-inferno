@@ -25,9 +25,21 @@ export async function update() {
   // Read existing config
   const config = await fs.readJson(CONFIG_FILE);
 
+  // Migrate old github config to new git config
+  if (config.github && !config.git) {
+    console.log(chalk.yellow('Migrating config from github to git format...'));
+    config.git_host = 'github';
+    config.git = {
+      host: 'github',
+      username: config.github.username
+    };
+    // Note: Keep config.github for backward compat
+  }
+
   console.log(chalk.dim('Current config:'));
   console.log(chalk.dim(`  Provider: ${config.provider || 'none'}`));
   console.log(chalk.dim(`  Language: ${config.language || 'en'}`));
+  console.log(chalk.dim(`  Git host: ${config.git_host || 'github'}`));
   console.log(chalk.dim(`  VM: ${config.vm_name || 'not set'}`));
   console.log('');
 
@@ -39,8 +51,8 @@ export async function update() {
   if (!config.vm_name) {
     warnings.push('vm_name - No VM name configured');
   }
-  if (!config.github?.username) {
-    warnings.push('github.username - Needed for repo operations');
+  if (!config.git?.username && !config.github?.username) {
+    warnings.push('git.username - Needed for repo operations');
   }
 
   if (warnings.length > 0) {

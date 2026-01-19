@@ -16,6 +16,17 @@ function getGitHubUsername() {
   }
 }
 
+// Auto-detect GitLab username from glab CLI
+function getGitLabUsername() {
+  try {
+    return execSync('glab api user --jq ".username"', { stdio: ['pipe', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return '';
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -162,6 +173,30 @@ By continuing, you accept full responsibility for usage.
     }
   }
 
+  // Git host selection
+  const gitHostAnswers = await inquirer.prompt([{
+    type: 'rawlist',
+    name: 'git_host',
+    message: 'Git hosting platform?',
+    choices: [
+      { name: 'GitHub', value: 'github' },
+      { name: 'GitLab', value: 'gitlab' }
+    ]
+  }]);
+
+  // Check for respective git CLI
+  const gitCliName = gitHostAnswers.git_host === 'github' ? 'gh' : 'glab';
+  if (!checkCli(gitCliName)) {
+    console.log(chalk.yellow(`\n⚠️  ${gitCliName} CLI not found.`));
+    if (gitHostAnswers.git_host === 'github') {
+      console.log(chalk.dim('Install with: brew install gh'));
+    } else {
+      console.log(chalk.dim('Install with: brew install glab'));
+    }
+  } else {
+    console.log(chalk.green(`✓ ${gitCliName} CLI found`));
+  }
+
   // VM-specific questions
   let vmConfig = {};
   if (answers.provider !== 'none') {
@@ -204,18 +239,22 @@ By continuing, you accept full responsibility for usage.
     }
   ]);
 
-  // GitHub - auto-detect from gh CLI
-  const detectedGithub = getGitHubUsername();
-  if (detectedGithub) {
-    console.log(chalk.green(`✓ GitHub detected: ${detectedGithub}`));
+  // Git username - auto-detect from appropriate CLI
+  const detectedUsername = gitHostAnswers.git_host === 'github'
+    ? getGitHubUsername()
+    : getGitLabUsername();
+  const gitHostLabel = gitHostAnswers.git_host === 'github' ? 'GitHub' : 'GitLab';
+
+  if (detectedUsername) {
+    console.log(chalk.green(`✓ ${gitHostLabel} detected: ${detectedUsername}`));
   }
 
-  const githubAnswers = await inquirer.prompt([
+  const gitAnswers = await inquirer.prompt([
     {
       type: 'input',
-      name: 'github_username',
-      message: 'GitHub username?',
-      default: detectedGithub
+      name: 'username',
+      message: `${gitHostLabel} username?`,
+      default: detectedUsername
     }
   ]);
 
@@ -278,9 +317,15 @@ By continuing, you accept full responsibility for usage.
       ntfy_enabled: notifyAnswers.useNtfy,
       ntfy_topic: notifyAnswers.ntfyTopic || ''
     },
-    github: {
-      username: githubAnswers.github_username
+    git_host: gitHostAnswers.git_host,
+    git: {
+      host: gitHostAnswers.git_host,
+      username: gitAnswers.username
     },
+    // BACKWARD COMPAT: Also populate old github field if using GitHub
+    ...(gitHostAnswers.git_host === 'github' ? {
+      github: { username: gitAnswers.username }
+    } : {}),
     claude: {
       auth_method: authAnswers.claudeAuth
     }

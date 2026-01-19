@@ -144,9 +144,52 @@ get_test_cmd() {
     fi
 }
 
-# Get GitHub username
+# Get git host type (github or gitlab)
+get_git_host() {
+    local host
+    host=$(load_config "git_host" "")
+
+    # Fallback: if github.username exists but git_host doesn't, assume github
+    if [ -z "$host" ]; then
+        local github_user
+        github_user=$(load_config_nested "github" "username" "")
+        if [ -n "$github_user" ]; then
+            echo "github"
+            return
+        fi
+    fi
+
+    echo "${host:-github}"  # Default to github for backward compat
+}
+
+# Get git username (works for both hosts)
+get_git_username() {
+    local username
+    username=$(load_config_nested "git" "username" "")
+
+    # Fallback to old github.username
+    if [ -z "$username" ]; then
+        username=$(load_config_nested "github" "username" "")
+    fi
+
+    echo "$username"
+}
+
+# Get CLI command name (gh or glab)
+get_git_cli() {
+    local host
+    host=$(get_git_host)
+
+    if [ "$host" = "gitlab" ]; then
+        echo "glab"
+    else
+        echo "gh"
+    fi
+}
+
+# DEPRECATED - kept for backward compat, use get_git_username instead
 get_github_username() {
-    load_config_nested "github" "username" ""
+    get_git_username
 }
 
 # Get VM IP

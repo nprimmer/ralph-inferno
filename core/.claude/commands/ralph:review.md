@@ -64,11 +64,23 @@ Show:
 git pull origin main
 ```
 
-**STEP 5: LIST PRs (if any)**
+**STEP 5: LIST PRs/MRs (if any)**
 
 ```bash
-gh pr list
+# Detect git host
+GIT_HOST=$(grep -o '"git_host"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+GIT_HOST="${GIT_HOST:-github}"
+
+if [ "$GIT_HOST" = "gitlab" ]; then
+    glab mr list
+else
+    gh pr list
+fi
 ```
+
+Show the appropriate list:
+- For GitHub: Pull Requests
+- For GitLab: Merge Requests
 
 **STEP 6: OPEN TUNNEL (if --tunnel)**
 

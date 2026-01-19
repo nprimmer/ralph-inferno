@@ -67,12 +67,17 @@ check_required() {
         fail "TypeScript (tsc) - MISSING"
     fi
 
-    # gh CLI
-    if command -v gh &>/dev/null; then
-        local gh_ver=$(gh --version | head -1 | awk '{print $3}')
-        ok "gh CLI $gh_ver"
+    # Git CLI (gh or glab based on config)
+    local git_host=$(grep -o '"git_host"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+    git_host="${git_host:-github}"
+    local git_cli="gh"
+    [ "$git_host" = "gitlab" ] && git_cli="glab"
+
+    if command -v $git_cli &>/dev/null; then
+        local cli_ver=$($git_cli --version | head -1)
+        ok "$git_cli CLI: $cli_ver"
     else
-        fail "gh CLI - MISSING"
+        fail "$git_cli CLI - MISSING"
     fi
 
     # Claude CLI
@@ -121,12 +126,17 @@ check_auth() {
     log ""
     log "${BLUE}=== AUTH STATUS ===${NC}"
 
-    # gh auth
-    if gh auth status &>/dev/null 2>&1; then
-        local gh_user=$(gh auth status 2>&1 | grep "Logged in" | awk '{print $NF}')
-        ok "gh: Logged in as $gh_user"
+    # Git host auth (gh or glab based on config)
+    local git_host=$(grep -o '"git_host"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+    git_host="${git_host:-github}"
+    local git_cli="gh"
+    [ "$git_host" = "gitlab" ] && git_cli="glab"
+
+    if $git_cli auth status &>/dev/null 2>&1; then
+        local git_user=$($git_cli auth status 2>&1 | grep -i "logged in" | awk '{print $NF}')
+        ok "$git_cli: Logged in as $git_user"
     else
-        fail "gh: NOT AUTHENTICATED"
+        fail "$git_cli: NOT AUTHENTICATED"
     fi
 
     # Claude auth

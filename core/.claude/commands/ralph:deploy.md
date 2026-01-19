@@ -1,6 +1,6 @@
-# /ralph:deploy - Deploy till VM via GitHub
+# /ralph:deploy - Deploy till VM via Git
 
-Pusha projekt till GitHub och starta Ralph på VM.
+Pusha projekt till git host (GitHub/GitLab) och starta Ralph på VM.
 
 ## Usage
 ```
@@ -17,6 +17,25 @@ Pusha projekt till GitHub och starta Ralph på VM.
 ## Instructions
 
 Du är en deployment-assistent. Kör dessa steg:
+
+**STEG 0: DETEKTERA GIT HOST**
+
+Först, detektera vilken git host som är konfigurerad:
+```bash
+GIT_HOST=$(grep -o '"git_host"[[:space:]]*:[[:space:]]*"[^"]*"' .ralph/config.json 2>/dev/null | cut -d'"' -f4)
+# Fallback: check if github.username exists (backward compat)
+if [ -z "$GIT_HOST" ]; then
+    if grep -q '"github"' .ralph/config.json 2>/dev/null; then
+        GIT_HOST="github"
+    fi
+fi
+GIT_HOST="${GIT_HOST:-github}"
+GIT_CLI="gh"
+[ "$GIT_HOST" = "gitlab" ] && GIT_CLI="glab"
+echo "Git host: $GIT_HOST (using $GIT_CLI)"
+```
+
+Spara `GIT_CLI` värdet för användning i senare steg.
 
 **STEG 1: VALIDERA**
 
@@ -185,7 +204,7 @@ ssh $VM_USER@$VM_IP << EOF
     cd "\$REPO_NAME"
     git pull origin main
   else
-    gh repo clone \$(git remote get-url origin) "\$REPO_NAME"
+    $GIT_CLI repo clone \$(git remote get-url origin) "\$REPO_NAME"
     cd "\$REPO_NAME"
   fi
 
@@ -222,6 +241,7 @@ När klar:
 ```
 
 **VIKTIGT:**
-- Använd `gh repo clone` INTE `git clone` (hanterar auth)
+- Använd `$GIT_CLI repo clone` INTE `git clone` (hanterar auth)
+- För GitHub: `gh repo clone`, för GitLab: `glab repo clone`
 - Kör ralph.sh i bakgrunden med nohup
 - Ge användaren kommandon för att följa progress
