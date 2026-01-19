@@ -175,6 +175,38 @@ classify_spec() {
 
 ---
 
+### Domain Modules
+
+**Problem:** Ralph är optimerad för kod. Vad om man vill skapa andra saker?
+
+**Idé:** Domän-specifika moduler med anpassade workflows.
+
+```
+/ralph:idea "haj-bok" --module book
+/ralph:idea "todo-app" --module app
+/ralph:idea "synthwave album" --module music
+```
+
+| Modul | Output | "Deploy" gör | "Test" gör |
+|-------|--------|--------------|------------|
+| **app** | Kod + tester | `npm run build` | Playwright E2E |
+| **book** | Chapters (markdown) | Compile PDF/ePub | Spell-check, consistency |
+| **music** | Prompts + metadata | Suno/Udio API | Preview + quality check |
+| **video** | Script + shot list | Storyboard render | ? |
+| **course** | Lessons + quizzes | LMS export | Quiz validation |
+
+**Frågor att lösa:**
+- Vad är "spec" för en bok? (Chapter outline?)
+- Vad är "build pass" för musik? (API returnerar audio?)
+- Hur verifierar vi kvalitet på kreativt innehåll?
+
+**Möjlig approach:**
+- Varje modul har egen `templates/`, `verify.sh`, `test-loop.sh`
+- Brainstorm-tekniker kan vara samma (5 Whys funkar för allt)
+- Deploy/test blir helt annorlunda per modul
+
+---
+
 ## Prioritering
 
 | Feature | Värde | Komplexitet | Status |
@@ -185,6 +217,7 @@ classify_spec() {
 | Blind validation | Högt | Låg | Backlog |
 | SQLite state | Medel | Medel | Backlog |
 | Complexity classification | Medel | Låg | Backlog |
+| **Domain modules** | Högt | Hög | Backlog |
 
 ---
 
@@ -195,4 +228,4 @@ classify_spec() {
 
 ---
 
-*Senast uppdaterad: 2025-01-16*
+*Senast uppdaterad: 2026-01-19*
