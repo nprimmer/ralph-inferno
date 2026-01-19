@@ -137,62 +137,47 @@ Or use the slash command in Claude Code:
 
 ## Workflow
 
+Ralph supports two entry points: **Greenfield** (new apps) and **Brownfield** (existing apps).
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           RALPH WORKFLOW                                     │
+│                        TWO ENTRY POINTS                                      │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-   YOUR IDEA
-      │
-      ▼
-┌─────────────────┐
-│ /ralph:discover │  ◄── Autonomous discovery loop
-│                 │      Claude explores from all angles
-│ Output: PRD.md  │      (Analyst, PM, UX, Architect, Business)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  /ralph:plan    │  ◄── Breaks down PRD into specs
-│                 │
-│ Output: specs/* │      (01-setup.md, 02-auth.md, etc.)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  /ralph:deploy  │  ◄── Push to GitHub, start on VM
-│                 │      Choose mode: Quick/Standard/Inferno
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     ON THE VM (AUTONOMOUS)                       │
-│                                                                  │
-│   ralph.sh runs specs → build → test → auto-fix → commit        │
-│                                                                  │
-└────────┬─────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  /ralph:review  │  ◄── Open tunnels, test the app
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ /ralph:change-      │  ◄── If bugs found, generate CR specs
-│ request             │      Then run /ralph:deploy again
-└─────────────────────┘
+   GREENFIELD (new app)                    BROWNFIELD (existing app)
+         │                                          │
+         ▼                                          ▼
+   /ralph:idea ──────────────────────────► /ralph:change-request
+   (BMAD Brainstorm)                       (Analyze scope: S/M/L)
+         │                                          │
+         ▼                                          │
+   PROJECT-BRIEF.md                                 │
+         │                                          │
+         ▼                                          │
+   /ralph:discover                                  │
+   (BMAD Analyst)                                   │
+         │                                          │
+         ▼                                          ▼
+      PRD.md ─────────────────────────► CHANGE-REQUEST.md
+                            │
+                            ▼
+                      /ralph:plan
+                      (auto-detects input)
+                            │
+                            ▼
+                      /ralph:deploy → VM → /ralph:review
 ```
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `/ralph:discover` | Autonomous discovery loop, creates PRD with web research |
-| `/ralph:plan` | Creates implementation plan + spec files |
+| `/ralph:idea` | **Greenfield start** - BMAD brainstorm → PROJECT-BRIEF.md |
+| `/ralph:discover` | BMAD analyst mode → PRD.md |
+| `/ralph:change-request` | **Brownfield start** - Analyze changes → CR specs |
+| `/ralph:plan` | Creates specs from PRD or Change Request |
 | `/ralph:deploy` | Push to GitHub, choose mode, start Ralph on VM |
 | `/ralph:review` | Open SSH tunnels, test the app |
-| `/ralph:change-request` | Document bugs, generate CR specs for fixes |
 | `/ralph:status` | Check Ralph's progress on VM |
 | `/ralph:abort` | Stop Ralph on VM |
 
@@ -212,23 +197,36 @@ When running `/ralph:deploy`, you choose a mode:
 
 Install the **Claude Chrome Extension** - it lets Claude see and interact with websites you reference during `/ralph:discover`. This enables better research of competitors, APIs, and documentation.
 
-### Example Session
+### Example: New App (Greenfield)
 
 ```bash
-# 1. Install Ralph in your project
+# 1. Install Ralph
 npx ralph-inferno install
 
-# 2. In Claude Code:
-/ralph:discover    # Autonomous discovery with web research
-/ralph:plan        # Generate specs from PRD
-/ralph:deploy      # Choose mode, send to VM
+# 2. Brainstorm & Discover
+/ralph:idea "todo app"      # BMAD brainstorm → PROJECT-BRIEF.md
+/ralph:discover             # BMAD analyst → PRD.md
 
-# 3. Next morning:
-/ralph:review      # Test what Ralph built
+# 3. Plan & Deploy
+/ralph:plan                 # Generate specs
+/ralph:deploy               # Send to VM
 
-# 4. If bugs found:
-/ralph:change-request  # Generate fix specs
-/ralph:deploy          # Run fixes
+# 4. Review
+/ralph:review               # Test what Ralph built
+```
+
+### Example: Existing App (Brownfield)
+
+```bash
+# 1. Describe changes
+/ralph:change-request "add dark mode"   # Analyze scope → CR specs
+
+# 2. Plan & Deploy
+/ralph:plan                 # Auto-detects Change Request
+/ralph:deploy               # Send to VM
+
+# 3. Review
+/ralph:review               # Test the changes
 ```
 
 ## Language Agnostic

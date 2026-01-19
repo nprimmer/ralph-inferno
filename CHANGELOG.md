@@ -2,6 +2,34 @@
 
 All notable changes to Ralph Inferno will be documented in this file.
 
+## [1.0.9] - 2026-01-19
+
+### Added
+- **Two entry points**: Greenfield (new apps) and Brownfield (existing apps)
+- **`/ralph:idea`**: Full BMAD Brainstorm Mode with 8 techniques
+  - 5 Whys, Crazy 8s, Mashups, HMW, SCAMPER, Audience Flip, Devil's Advocate, Web Research
+  - Autonomous (YOLO) or Interactive mode
+  - Outputs PROJECT-BRIEF.md
+- **`/ralph:discover`**: Full BMAD Analyst Mode with 8 techniques
+  - Market Research, Personas, User Journeys, Feature Prioritization
+  - Tech Feasibility, Security, Business Model, Devil's Advocate
+  - Takes PROJECT-BRIEF.md as input, outputs PRD.md
+- **`/ralph:change-request`**: Brownfield entry point
+  - Analyzes existing codebase
+  - Scope assessment (Small/Medium/Large)
+  - Different analysis depth based on scope
+  - Generates CR-* specs with regression checks
+- **`/ralph:plan`**: Now supports both PRD and Change Request input
+  - Auto-detects input source
+  - PRD mode: Full greenfield planning
+  - CR mode: Appends to existing IMPLEMENTATION_PLAN.md
+- **New templates**: PROJECT-BRIEF-template.md, CHANGE-REQUEST-template.md
+
+### Changed
+- All phases now offer Autonomous (YOLO) or Interactive mode
+- Completeness loops in brainstorm, discovery, and planning phases
+- Updated ARCHITECTURE.md and README.md with new workflow
+
 ## [1.0.8] - 2025-01-19
 
 ### Added

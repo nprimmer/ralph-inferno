@@ -11,11 +11,27 @@ Ralph Inferno is a spec-first autonomous development workflow that runs Claude C
 ### 1. Spec-First Development
 Every feature starts as a spec file. Claude reads the spec, implements it, verifies it works, then moves to the next. Specs are the source of truth.
 
-### 2. Four-Phase Workflow
+### 2. Two Entry Points
+Ralph supports both greenfield (new apps) and brownfield (existing apps):
+
 ```
-Discovery → Planning → Deploy → Review
+GREENFIELD                          BROWNFIELD
+/ralph:idea                         /ralph:change-request
+     ↓                                      ↓
+PROJECT-BRIEF.md                    CHANGE-REQUEST.md
+     ↓                                      ↓
+/ralph:discover                             │
+     ↓                                      │
+  PRD.md ────────────────────────────────────
+                      ↓
+                /ralph:plan
+                      ↓
+               .ralph-specs/
+                      ↓
+                /ralph:deploy
+                      ↓
+                /ralph:review
 ```
-Each phase has a dedicated slash command. You progress through phases linearly.
 
 ### 3. Three Execution Modes
 Control how much verification happens on the VM:
@@ -47,49 +63,61 @@ Push notifications via ntfy.sh when Ralph finishes or needs help. Check status w
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           RALPH WORKFLOW                                     │
+│                        TWO ENTRY POINTS                                      │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-   YOUR IDEA
-      │
-      ▼
-┌─────────────────┐
-│ /ralph:discover │  ◄── Autonomous discovery loop
-│                 │      Claude explores from all angles
-│ Output: PRD.md  │      (Analyst, PM, UX, Architect, Business)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  /ralph:plan    │  ◄── Breaks down PRD into specs
-│                 │
-│ Output: specs/* │      (01-setup.md, 02-auth.md, etc.)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  /ralph:deploy  │  ◄── Push to GitHub, start on VM
-│                 │      Choose mode: Quick/Standard/Inferno
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     ON THE VM (AUTONOMOUS)                       │
-│                                                                  │
-│   ralph.sh runs specs → build → test → auto-fix → commit        │
-│                                                                  │
-└────────┬─────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  /ralph:review  │  ◄── Open tunnels, test the app
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ /ralph:change-      │  ◄── If bugs found, generate CR specs
-│ request             │      Then run /ralph:deploy again
-└─────────────────────┘
+   GREENFIELD (new app)                    BROWNFIELD (existing app)
+         │                                          │
+         ▼                                          ▼
+┌─────────────────┐                        ┌─────────────────────┐
+│  /ralph:idea    │                        │ /ralph:change-      │
+│  BMAD Brainstorm│                        │ request             │
+│                 │                        │ (Analyze + Scope)   │
+│ Output:         │                        │                     │
+│ PROJECT-BRIEF.md│                        │ Output:             │
+└────────┬────────┘                        │ CHANGE-REQUEST.md   │
+         │                                 └──────────┬──────────┘
+         ▼                                            │
+┌─────────────────┐                                   │
+│ /ralph:discover │                                   │
+│ BMAD Analyst    │                                   │
+│                 │                                   │
+│ Output: PRD.md  │                                   │
+└────────┬────────┘                                   │
+         │                                            │
+         └──────────────────┬─────────────────────────┘
+                            │
+                            ▼
+                   ┌─────────────────┐
+                   │  /ralph:plan    │  ◄── Auto-detects input
+                   │                 │      (PRD or Change Request)
+                   │ Output: specs/* │
+                   └────────┬────────┘
+                            │
+                            ▼
+                   ┌─────────────────┐
+                   │  /ralph:deploy  │  ◄── Push to GitHub, start on VM
+                   │                 │      Choose mode: Quick/Standard/Inferno
+                   └────────┬────────┘
+                            │
+                            ▼
+         ┌─────────────────────────────────────────────────────────┐
+         │                     ON THE VM (AUTONOMOUS)               │
+         │                                                          │
+         │   ralph.sh runs specs → build → test → auto-fix → commit │
+         │                                                          │
+         └────────┬────────────────────────────────────────────────┘
+                  │
+                  ▼
+         ┌─────────────────┐
+         │  /ralph:review  │  ◄── Open tunnels, test the app
+         └────────┬────────┘
+                  │
+                  ▼
+         ┌─────────────────────┐
+         │ /ralph:change-      │  ◄── If bugs found, generate CR specs
+         │ request --bug       │      Then run /ralph:deploy again
+         └─────────────────────┘
 ```
 
 ---
@@ -117,14 +145,14 @@ Located in `.claude/commands/`:
 
 | Command | Purpose |
 |---------|---------|
-| `ralph:discover` | Autonomous discovery loop with web research |
-| `ralph:plan` | Generate implementation specs from PRD |
+| `ralph:idea` | **BMAD Brainstorm** - 8 techniques → PROJECT-BRIEF.md |
+| `ralph:discover` | **BMAD Analyst** - Research & validation → PRD.md |
+| `ralph:change-request` | **Brownfield entry** - Analyze changes → CR specs |
+| `ralph:plan` | Generate specs from PRD or Change Request |
 | `ralph:preflight` | Verify requirements before deployment |
 | `ralph:deploy` | Push to GitHub, start Ralph on VM |
 | `ralph:status` | Check Ralph's progress on VM |
 | `ralph:review` | Open tunnels, test the built app |
-| `ralph:change-request` | Document bugs, generate fix specs |
-| `ralph:idea` | Quick idea capture to existing PRD |
 | `ralph:abort` | Stop Ralph on VM |
 | `ralph:update` | Update Ralph to latest version |
 
@@ -335,9 +363,11 @@ When `build_cmd` or `test_cmd` not set, Ralph auto-detects:
 │   └── summary.sh        # Progress summaries
 │
 ├── templates/
-│   ├── PRD-template.md   # Product requirements
-│   ├── SPEC-template.md  # Spec template
-│   └── stacks/           # Stack-specific templates
+│   ├── PROJECT-BRIEF-template.md  # Brainstorm output
+│   ├── CHANGE-REQUEST-template.md # Brownfield changes
+│   ├── PRD-template.md            # Product requirements
+│   ├── SPEC-template.md           # Spec template
+│   └── stacks/                    # Stack-specific templates
 │
 └── phases/               # Phase-specific configs
 
